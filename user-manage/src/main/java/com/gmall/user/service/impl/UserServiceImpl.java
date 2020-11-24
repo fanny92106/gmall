@@ -1,10 +1,11 @@
 package com.gmall.user.service.impl;
 
-import com.gmall.user.bean.UserInfo;
+
+import bean.UserInfo;
+import com.alibaba.dubbo.config.annotation.Service;
 import com.gmall.user.mapper.UserMapper;
-import com.gmall.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import service.UserService;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
