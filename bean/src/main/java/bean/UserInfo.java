@@ -1,4 +1,4 @@
-package com.gmall.user.bean;
+package bean;
 
 import lombok.NoArgsConstructor;
 
