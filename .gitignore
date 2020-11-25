@@ -41,7 +41,7 @@ mvnw
 *.cmd
 lib
 /META-INF
-*/.DS_Store
+*.DS_Store
 user-manage/META-INF/
 
 

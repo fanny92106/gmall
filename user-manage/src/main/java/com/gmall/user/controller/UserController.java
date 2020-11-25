@@ -2,7 +2,7 @@ package com.gmall.user.controller;
 
 
 import bean.UserInfo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.alibaba.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 public class UserController {
 
-    @Autowired
+    @Reference
     UserService userService;
 
     @GetMapping("getUser")
