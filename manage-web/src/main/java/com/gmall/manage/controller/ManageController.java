@@ -1,10 +1,7 @@
 package com.gmall.manage.controller;
 
 
-import bean.BaseAttrInfo;
-import bean.BaseCatalog1;
-import bean.BaseCatalog2;
-import bean.BaseCatalog3;
+import bean.*;
 import com.alibaba.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,5 +45,11 @@ public class ManageController {
     public String saveBaseAttrInfo(@RequestBody BaseAttrInfo baseAttrInfo){
         manageService.saveAttrInfo(baseAttrInfo);
         return "success";
+    }
+
+    @GetMapping("getAttrValueList")
+    public List<BaseAttrValue> getAttrValueList(String attrId){
+        BaseAttrInfo attrInfo = manageService.getAttrInfo(attrId);
+        return attrInfo.getAttrValueList();
     }
 }

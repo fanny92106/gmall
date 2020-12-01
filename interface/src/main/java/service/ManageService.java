@@ -23,4 +23,7 @@ public interface ManageService {
 
     // save attribute info
     public void saveAttrInfo(BaseAttrInfo baseAttrInfo);
+
+    // search attribute info based on attribute id
+    public BaseAttrInfo getAttrInfo(String attrId);
 }

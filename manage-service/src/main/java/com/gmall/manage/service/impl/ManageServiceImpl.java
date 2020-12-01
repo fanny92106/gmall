@@ -4,7 +4,9 @@ import bean.*;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.gmall.manage.mapper.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import service.ManageService;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 
@@ -56,14 +58,40 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
+    @Transactional
     public void saveAttrInfo(BaseAttrInfo baseAttrInfo) {
-        baseAttrInfoMapper.insertSelective(baseAttrInfo);
+        // check if baseAttrInfo existed in db
+        String baseAttrId = baseAttrInfo.getId();
+        if(baseAttrId!=null && baseAttrId.length()>0){
+            // update attrInfo
+            baseAttrInfoMapper.updateByPrimaryKeySelective(baseAttrInfo);
+        }else{
+            // create new attrInfo
+            baseAttrInfoMapper.insertSelective(baseAttrInfo);
+        }
+        // delete all previous attrValue then store new onces
+        Example example = new Example(BaseAttrValue.class);
+        example.createCriteria().andEqualTo("attrId", baseAttrInfo.getId());
+        baseAttrValueMapper.deleteByExample(example);
 
+        // create new attrValue
         List<BaseAttrValue> attrValueList = baseAttrInfo.getAttrValueList();
         for(BaseAttrValue baseAttrValue:attrValueList){
             String attrId = baseAttrInfo.getId();
             baseAttrValue.setAttrId(attrId);
             baseAttrValueMapper.insertSelective(baseAttrValue);
         }
+    }
+
+    @Override
+    public BaseAttrInfo getAttrInfo(String attrId) {
+        BaseAttrInfo baseAttrInfo = baseAttrInfoMapper.selectByPrimaryKey(attrId);
+
+        BaseAttrValue baseAttrValue = new BaseAttrValue();
+        baseAttrValue.setAttrId(attrId);
+        List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.select(baseAttrValue);
+        // set attrValueList in baseAttrInfo
+        baseAttrInfo.setAttrValueList(baseAttrValueList);
+        return baseAttrInfo;
     }
 }
