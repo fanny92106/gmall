@@ -1,5 +1,6 @@
 package service;
 
+import bean.BaseAttrInfo;
 import bean.BaseCatalog1;
 import bean.BaseCatalog2;
 import bean.BaseCatalog3;
@@ -16,4 +17,10 @@ public interface ManageService {
 
     // search third catalog based on second
     public List<BaseCatalog3> getCatalog3(String catalog2Id);
+
+    // search attribute info based on third catalog
+    public List<BaseAttrInfo> getAttrList(String catalog3Id);
+
+    // save attribute info
+    public void saveAttrInfo(BaseAttrInfo baseAttrInfo);
 }

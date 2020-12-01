@@ -1,11 +1,14 @@
 package com.gmall.manage.controller;
 
 
+import bean.BaseAttrInfo;
 import bean.BaseCatalog1;
 import bean.BaseCatalog2;
 import bean.BaseCatalog3;
 import com.alibaba.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import service.ManageService;
 
@@ -33,5 +36,17 @@ public class ManageController {
     public List<BaseCatalog3> getBaseCatalog3(String catalog2Id){
         List<BaseCatalog3> baseCatalog3List = manageService.getCatalog3(catalog2Id);
         return baseCatalog3List;
+    }
+
+    @GetMapping("getBaseAttrInfo")
+    public List<BaseAttrInfo> getBaseAttrInfo(String catalog3Id){
+        List<BaseAttrInfo> baseAttrInfoList = manageService.getAttrList(catalog3Id);
+        return baseAttrInfoList;
+    }
+
+    @PostMapping("saveBaseAttrInfo")
+    public String saveBaseAttrInfo(@RequestBody BaseAttrInfo baseAttrInfo){
+        manageService.saveAttrInfo(baseAttrInfo);
+        return "success";
     }
 }
