@@ -52,4 +52,14 @@ public class ManageController {
         BaseAttrInfo attrInfo = manageService.getAttrInfo(attrId);
         return attrInfo.getAttrValueList();
     }
+
+    @GetMapping("baseSaleAttrList")
+    public List<BaseSaleAttr> getBaseSaleAttrList(){
+
+    }
+
+    @PostMapping("saveSpuInfo")
+    public String saveSpuInfo(@RequestBody SpuInfo spuInfo){
+        return "success";
+    }
 }
