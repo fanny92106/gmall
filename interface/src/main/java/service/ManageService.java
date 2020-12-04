@@ -1,9 +1,6 @@
 package service;
 
-import bean.BaseAttrInfo;
-import bean.BaseCatalog1;
-import bean.BaseCatalog2;
-import bean.BaseCatalog3;
+import bean.*;
 
 import java.util.List;
 
@@ -26,4 +23,10 @@ public interface ManageService {
 
     // search attribute info based on attribute id
     public BaseAttrInfo getAttrInfo(String attrId);
+
+    // get sales attribute info
+    public List<BaseSaleAttr> getBaseSaleAttrList();
+
+    // save spu info
+    public void saveSpuInfo(SpuInfo spuInfo);
 }

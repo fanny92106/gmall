@@ -28,6 +28,21 @@ public class ManageServiceImpl implements ManageService {
     @Autowired
     BaseAttrValueMapper baseAttrValueMapper;
 
+    @Autowired
+    BaseSaleAttrMapper baseSaleAttrMapper;
+
+    @Autowired
+    SaleAttrValueMapper saleAttrValueMapper;
+
+    @Autowired
+    SpuImageMapper spuImageMapper;
+
+    @Autowired
+    SpuInfoMapper spuInfoMapper;
+
+    @Autowired
+    SpuSaleAttrMapper spuSaleAttrMapper;
+
     @Override
     public List<BaseCatalog1> getCatalog1() {
         return baseCatalog1Mapper.selectAll();
@@ -93,5 +108,37 @@ public class ManageServiceImpl implements ManageService {
         // set attrValueList in baseAttrInfo
         baseAttrInfo.setAttrValueList(baseAttrValueList);
         return baseAttrInfo;
+    }
+
+    @Override
+    public List<BaseSaleAttr> getBaseSaleAttrList() {
+        return baseSaleAttrMapper.selectAll();
+    }
+
+    @Override
+    public void saveSpuInfo(SpuInfo spuInfo) {
+        // save spu basic info to generate spu_ip
+        spuInfoMapper.insertSelective(spuInfo);
+
+        // image info
+        List<SpuImage> spuImageList = spuInfo.getSpuImageList();
+        for (SpuImage spuImage : spuImageList) {
+            spuImage.setId(spuInfo.getId());
+            spuImageMapper.insertSelective(spuImage);
+        }
+
+        // spu sale attr info
+        List<SpuSaleAttr> spuSaleAttrList = spuInfo.getSpuSaleAttrList();
+        for (SpuSaleAttr spuSaleAttr : spuSaleAttrList) {
+            spuSaleAttr.setId(spuInfo.getId());
+            spuSaleAttrMapper.insertSelective(spuSaleAttr);
+
+            // sale attr value info
+            List<SpuSaleAttrValue> spuSaleAttrValueList = spuSaleAttr.getSpuSaleAttrValueList();
+            for (SpuSaleAttrValue spuSaleAttrValue : spuSaleAttrValueList) {
+                spuSaleAttrValue.setSpuId(spuInfo.getId());
+                saleAttrValueMapper.insertSelective(spuSaleAttrValue);
+            }
+        }
     }
 }

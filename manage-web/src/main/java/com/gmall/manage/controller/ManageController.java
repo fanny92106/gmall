@@ -55,11 +55,13 @@ public class ManageController {
 
     @GetMapping("baseSaleAttrList")
     public List<BaseSaleAttr> getBaseSaleAttrList(){
-
+        return manageService.getBaseSaleAttrList();
     }
+
 
     @PostMapping("saveSpuInfo")
     public String saveSpuInfo(@RequestBody SpuInfo spuInfo){
+        manageService.saveSpuInfo(spuInfo);
         return "success";
     }
 }
