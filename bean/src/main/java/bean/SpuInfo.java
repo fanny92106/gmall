@@ -1,5 +1,6 @@
 package bean;
 
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -7,22 +8,27 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
 
-
 @Data
 @NoArgsConstructor
-public class BaseAttrInfo implements Serializable {
+public class SpuInfo implements Serializable {
 
     @Id
     @Column
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     @Column
-    private String attrName;
+    private String spuName;
+
+    @Column
+    private String description;
 
     @Column
     private String catalog3Id;
 
     @Transient
-    private List<BaseAttrValue> attrValueList;
+    private List<SpuImage> spuImageList;
+
+    @Transient
+    private List<SpuSaleAttr> spuSaleAttrList;
 }
