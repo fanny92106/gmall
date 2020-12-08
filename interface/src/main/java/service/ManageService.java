@@ -38,4 +38,7 @@ public interface ManageService {
 
     // save sku info
     public void saveSkuInfo(SkuInfo skuInfo);
+
+    // search sku info
+    public SkuInfo getSkuInfo(String skuId);
 }

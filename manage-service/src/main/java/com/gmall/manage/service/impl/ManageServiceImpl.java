@@ -220,4 +220,24 @@ public class ManageServiceImpl implements ManageService {
             skuImageMapper.insertSelective(image);
         }
     }
+
+    @Override
+    public SkuInfo getSkuInfo(String skuId) {
+        // get basic sku info
+        SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
+
+        // get sku image list
+        SkuImage skuImage = new SkuImage();
+        skuImage.setSkuId(skuId);
+        List<SkuImage> skuImageList = skuImageMapper.select(skuImage);
+        skuInfo.setSkuImageList(skuImageList);
+
+        // get sku attr value
+        SkuSaleAttrValue skuSaleAttrValue = new SkuSaleAttrValue();
+        skuSaleAttrValue.setSkuId(skuId);
+        List<SkuSaleAttrValue> skuSaleAttrValueList = skuSaleAttrValueMapper.select(skuSaleAttrValue);
+        skuInfo.setSkuSaleAttrValueList(skuSaleAttrValueList);
+
+        return skuInfo;
+    }
 }
