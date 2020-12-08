@@ -35,4 +35,7 @@ public interface ManageService {
 
     // search sale attr based on spuId
     public List<SpuSaleAttr> getSpuSaleAttrList(String spuId);
+
+    // save sku info
+    public void saveSkuInfo(SkuInfo skuInfo);
 }
