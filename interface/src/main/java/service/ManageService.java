@@ -32,4 +32,7 @@ public interface ManageService {
 
     // search image list based on spuId
     public List<SpuImage> getSpuImageList(String spuId);
+
+    // search sale attr based on spuId
+    public List<SpuSaleAttr> getSpuSaleAttrList(String spuId);
 }

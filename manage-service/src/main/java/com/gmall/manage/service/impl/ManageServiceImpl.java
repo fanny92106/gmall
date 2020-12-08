@@ -66,16 +66,20 @@ public class ManageServiceImpl implements ManageService {
 
     @Override
     public List<BaseAttrInfo> getAttrList(String catalog3Id) {
-        BaseAttrInfo baseAttrInfo = new BaseAttrInfo();
-        baseAttrInfo.setCatalog3Id(catalog3Id);
-        List<BaseAttrInfo> baseAttrInfoList = baseAttrInfoMapper.select(baseAttrInfo);
+        // loop search
+//        BaseAttrInfo baseAttrInfo = new BaseAttrInfo();
+//        baseAttrInfo.setCatalog3Id(catalog3Id);
+//        List<BaseAttrInfo> baseAttrInfoList = baseAttrInfoMapper.select(baseAttrInfo);
+//
+//        for (BaseAttrInfo attrInfo : baseAttrInfoList) {
+//            BaseAttrValue baseAttrValue = new BaseAttrValue();
+//            baseAttrValue.setAttrId(attrInfo.getId());
+//            List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.select(baseAttrValue);
+//            attrInfo.setAttrValueList(baseAttrValueList);
+//        }
 
-        for (BaseAttrInfo attrInfo : baseAttrInfoList) {
-            BaseAttrValue baseAttrValue = new BaseAttrValue();
-            baseAttrValue.setAttrId(attrInfo.getId());
-            List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.select(baseAttrValue);
-            attrInfo.setAttrValueList(baseAttrValueList);
-        }
+        // optimize above way by sending one sql query to search
+        List<BaseAttrInfo> baseAttrInfoList = baseAttrInfoMapper.getBaseAttrInfoListByCatalog3Id(catalog3Id);
         return baseAttrInfoList;
     }
 
@@ -156,5 +160,10 @@ public class ManageServiceImpl implements ManageService {
         SpuImage spuImage = new SpuImage();
         spuImage.setSpuId(spuId);
         return spuImageMapper.select(spuImage);
+    }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrList(String spuId) {
+
     }
 }
