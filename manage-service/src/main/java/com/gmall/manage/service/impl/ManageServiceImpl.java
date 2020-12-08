@@ -69,6 +69,13 @@ public class ManageServiceImpl implements ManageService {
         BaseAttrInfo baseAttrInfo = new BaseAttrInfo();
         baseAttrInfo.setCatalog3Id(catalog3Id);
         List<BaseAttrInfo> baseAttrInfoList = baseAttrInfoMapper.select(baseAttrInfo);
+
+        for (BaseAttrInfo attrInfo : baseAttrInfoList) {
+            BaseAttrValue baseAttrValue = new BaseAttrValue();
+            baseAttrValue.setAttrId(attrInfo.getId());
+            List<BaseAttrValue> baseAttrValueList = baseAttrValueMapper.select(baseAttrValue);
+            attrInfo.setAttrValueList(baseAttrValueList);
+        }
         return baseAttrInfoList;
     }
 
@@ -116,6 +123,7 @@ public class ManageServiceImpl implements ManageService {
     }
 
     @Override
+    @Transactional
     public void saveSpuInfo(SpuInfo spuInfo) {
         // save spu basic info to generate spu_ip
         spuInfoMapper.insertSelective(spuInfo);
@@ -131,6 +139,7 @@ public class ManageServiceImpl implements ManageService {
         List<SpuSaleAttr> spuSaleAttrList = spuInfo.getSpuSaleAttrList();
         for (SpuSaleAttr spuSaleAttr : spuSaleAttrList) {
             spuSaleAttr.setId(spuInfo.getId());
+
             spuSaleAttrMapper.insertSelective(spuSaleAttr);
 
             // sale attr value info
@@ -140,5 +149,12 @@ public class ManageServiceImpl implements ManageService {
                 saleAttrValueMapper.insertSelective(spuSaleAttrValue);
             }
         }
+    }
+
+    @Override
+    public List<SpuImage> getSpuImageList(String spuId) {
+        SpuImage spuImage = new SpuImage();
+        spuImage.setSpuId(spuId);
+        return spuImageMapper.select(spuImage);
     }
 }

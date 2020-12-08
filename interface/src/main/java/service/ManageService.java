@@ -29,4 +29,7 @@ public interface ManageService {
 
     // save spu info
     public void saveSpuInfo(SpuInfo spuInfo);
+
+    // search image list based on spuId
+    public List<SpuImage> getSpuImageList(String spuId);
 }
