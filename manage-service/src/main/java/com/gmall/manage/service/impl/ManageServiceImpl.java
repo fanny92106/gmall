@@ -164,6 +164,6 @@ public class ManageServiceImpl implements ManageService {
 
     @Override
     public List<SpuSaleAttr> getSpuSaleAttrList(String spuId) {
-
+        return spuSaleAttrMapper.getSpuSaleAttrBySpuId(spuId);
     }
 }
