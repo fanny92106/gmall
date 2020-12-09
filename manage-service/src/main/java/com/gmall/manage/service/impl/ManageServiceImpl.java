@@ -3,8 +3,10 @@ package com.gmall.manage.service.impl;
 import bean.*;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.gmall.manage.mapper.*;
+import com.gmall.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import redis.clients.jedis.Jedis;
 import service.ManageService;
 import tk.mybatis.mapper.entity.Example;
 
@@ -12,6 +14,9 @@ import java.util.List;
 
 @Service
 public class ManageServiceImpl implements ManageService {
+
+    @Autowired
+    RedisUtil redisUtil;
 
     @Autowired
     BaseCatalog1Mapper baseCatalog1Mapper;
@@ -223,6 +228,12 @@ public class ManageServiceImpl implements ManageService {
 
     @Override
     public SkuInfo getSkuInfo(String skuId) {
+        // add cache test
+        Jedis jedis = redisUtil.getJedis();
+        jedis.set("k1", "v1");
+        jedis.close();
+
+
         // get basic sku info
         SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
 
