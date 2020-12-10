@@ -41,4 +41,7 @@ public interface ManageService {
 
     // search sku info
     public SkuInfo getSkuInfo(String skuId);
+
+    // search selected sku sale attributes based on spuId
+    public List<SpuSaleAttr> getSpuSaleAttrBySpuIdCheckSku(String skuId, String spuId);
 }

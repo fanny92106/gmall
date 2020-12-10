@@ -20,4 +20,15 @@
             <result property="saleAttrValueName" column="sale_attr_value_name"></result>
         </collection>
     </resultMap>
+
+    <select id="getSpuSaleAttrBySpuIdCheckSku" resultMap="saleAttrList">
+        SELECT sa.id, sa.spu_id, sa.sale_attr_id, sa.sale_attr_name,
+        sv.id, sale_attr_value_id, sv.sale_attr_value_name,
+        IF(sav.sale_attr_value_id IS NULL, 0, 1) is_checked
+        FROM `spu_sale_attr` sa JOIN `spu_sale_attr_value` sv ON
+        sa.sale_attr_id=sv.sale_attr_id AND sa.spu_id=sv.spu_id
+        LEFT JOIN `sku_sale_attr_value` sav ON sv.id=sav.sale_attr_value_id and sav.sku_id=#{skuId}
+        WHERE sa.spu_id=#{spuId};
+    </select>
+
 </mapper>

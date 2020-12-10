@@ -251,4 +251,9 @@ public class ManageServiceImpl implements ManageService {
 
         return skuInfo;
     }
+
+    @Override
+    public List<SpuSaleAttr> getSpuSaleAttrBySpuIdCheckSku(String skuId, String spuId) {
+        return spuSaleAttrMapper.getSpuSaleAttrBySpuIdCheckSku(skuId, spuId);
+    }
 }
