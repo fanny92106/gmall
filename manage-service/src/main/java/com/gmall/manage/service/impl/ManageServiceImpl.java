@@ -244,6 +244,9 @@ public class ManageServiceImpl implements ManageService {
 
         // get basic sku info
         SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
+        if(skuInfo==null){
+            return null;
+        }
 
         // get sku image list
         SkuImage skuImage = new SkuImage();
@@ -271,11 +274,14 @@ public class ManageServiceImpl implements ManageService {
         String skuKey=SKUKEY_PREFIX+skuId+SKUKEY_INFO_SUFFIX;
         String skuInfoJson=jedis.get(skuKey);
         if(skuInfoJson!=null){
-            System.out.println(Thread.currentThread()+"cache hit!!");
-            skuInfoResult = JSON.parseObject(skuInfoJson, SkuInfo.class);
+            if(!"EMPTY".equals(skuInfoJson)){
+                System.out.println(Thread.currentThread()+"cache hit!!");
+                skuInfoResult = JSON.parseObject(skuInfoJson, SkuInfo.class);
+            }
         }else{
             System.out.println(Thread.currentThread()+"cache miss!!");
-            // redis distributed lock: setnx 1. search lock 2 take lock
+            // search db
+            // 1. redis distributed lock: setnx a. search lock b. take lock
             // define lock's structure   1. type String  2. key  sku:101:lock  3. value locked
             String token= UUID.randomUUID().toString();
             // lockKey : lock name
@@ -287,8 +293,14 @@ public class ManageServiceImpl implements ManageService {
                 // get lock
                 System.out.println(Thread.currentThread()+"get lock and hit db");
                 skuInfoResult = getSkuInfoDB(skuId);
+
                 System.out.println(Thread.currentThread()+"write to redis cache");
-                String skuInfoJsonResult = JSON.toJSONString(skuInfoResult);
+                String skuInfoJsonResult=null;
+                if(skuInfoResult!=null){
+                    skuInfoJsonResult = JSON.toJSONString(skuInfoResult);
+                }else{
+                    skuInfoJsonResult ="EMPTY";
+                }
                 jedis.setex(skuKey, SKU_EXPIRE_SEC, skuInfoJsonResult);
                 System.out.println(Thread.currentThread()+"release lock");
                 // delete own lock
@@ -298,6 +310,7 @@ public class ManageServiceImpl implements ManageService {
             }else{
                 // didn't get lock, recursively call self
                 try {
+                    // wait for other thread to get the lock and update Redis cache
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
