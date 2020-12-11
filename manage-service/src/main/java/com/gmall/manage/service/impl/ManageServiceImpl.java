@@ -14,6 +14,7 @@ import tk.mybatis.mapper.entity.Example;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class ManageServiceImpl implements ManageService {
@@ -273,26 +274,36 @@ public class ManageServiceImpl implements ManageService {
             System.out.println(Thread.currentThread()+"cache hit!!");
             skuInfoResult = JSON.parseObject(skuInfoJson, SkuInfo.class);
         }else{
+            System.out.println(Thread.currentThread()+"cache miss!!");
             // redis distributed lock: setnx 1. search lock 2 take lock
             // define lock's structure   1. type String  2. key  sku:101:lock  3. value locked
+            String token= UUID.randomUUID().toString();
+            // lockKey : lock name
             String lockKey=SKUKEY_PREFIX+skuId+SKUKEY_LOCK_SUFFIX;
-            Long locked = jedis.setnx(lockKey, "locked");
-            if(locked==1){
+            // try to get lock and set timeout if the thread cannot release lock normally
+            String locked = jedis.set(lockKey, token, "NX", "EX", 10);
+
+            if("OK".equals(locked)){
                 // get lock
-                System.out.println(Thread.currentThread()+"cache miss!!");
+                System.out.println(Thread.currentThread()+"get lock and hit db");
                 skuInfoResult = getSkuInfoDB(skuId);
                 System.out.println(Thread.currentThread()+"write to redis cache");
                 String skuInfoJsonResult = JSON.toJSONString(skuInfoResult);
                 jedis.setex(skuKey, SKU_EXPIRE_SEC, skuInfoJsonResult);
+                System.out.println(Thread.currentThread()+"release lock");
+                // delete own lock
+                if(jedis.exists(lockKey)&&token.equals(jedis.get(lockKey))){
+                    jedis.del(lockKey);
+                }
             }else{
                 // didn't get lock, recursively call self
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
-                    // recursively self call
-                    getSkuInfo(skuId);
                 }
+                // recursively self call
+                getSkuInfo(skuId);
             }
         }
         jedis.close();
