@@ -5,6 +5,10 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.gmall.manage.mapper.*;
 import com.gmall.util.RedisUtil;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
@@ -15,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ManageServiceImpl implements ManageService {
@@ -235,6 +240,7 @@ public class ManageServiceImpl implements ManageService {
         }
     }
 
+
     public SkuInfo getSkuInfoDB(String skuId) {
         // add cache test
         Jedis jedis = redisUtil.getJedis();
@@ -263,8 +269,8 @@ public class ManageServiceImpl implements ManageService {
         return skuInfo;
     }
 
-    @Override
-    public SkuInfo getSkuInfo(String skuId) {
+
+    public SkuInfo getSkuInfo_redis(String skuId) {
 
         SkuInfo skuInfoResult=null;
         // first search redis, if not exist then search db
@@ -304,7 +310,7 @@ public class ManageServiceImpl implements ManageService {
                 jedis.setex(skuKey, SKU_EXPIRE_SEC, skuInfoJsonResult);
                 System.out.println(Thread.currentThread()+"release lock");
                 // delete own lock
-                if(jedis.exists(lockKey)&&token.equals(jedis.get(lockKey))){
+                if(jedis.exists(lockKey)&&token.equals(jedis.get(lockKey))){  // skill cannot enforce delete own lock
                     jedis.del(lockKey);
                 }
             }else{
@@ -316,12 +322,69 @@ public class ManageServiceImpl implements ManageService {
                     e.printStackTrace();
                 }
                 // recursively self call
-                getSkuInfo(skuId);
+                getSkuInfo_redis(skuId);
             }
         }
         jedis.close();
         return skuInfoResult;
     }
+
+
+    @Override
+    public SkuInfo getSkuInfo(String skuId){
+        SkuInfo skuInfoResult=null;
+        // first search redis, if not exist then search db
+        Jedis jedis = redisUtil.getJedis();
+        int SKU_EXPIRE_SEC=10;
+        // redis structure: 1. type String 2. key sku:101:info 3. value skuInfoJson
+        String skuKey=SKUKEY_PREFIX+skuId+SKUKEY_INFO_SUFFIX;
+        String skuInfoJson=jedis.get(skuKey);
+        if(skuInfoJson!=null){
+            if(!"EMPTY".equals(skuInfoJson)){
+                System.out.println(Thread.currentThread()+"cache hit!!");
+                skuInfoResult = JSON.parseObject(skuInfoJson, SkuInfo.class);
+            }
+        }else {
+            // use redisson to ensure delete own lock (main reason to use redisson)
+            Config config = new Config();
+            config.useSingleServer().setAddress("redis://redis.gmall.com:6379");
+
+            RedissonClient redissonClient = Redisson.create(config);
+            String lockKey=SKUKEY_PREFIX+skuId+SKUKEY_LOCK_SUFFIX;
+            RLock lock = redissonClient.getLock(lockKey);
+            // set timeout
+            // lock.lock(10, TimeUnit.SECONDS);
+            try {
+                lock.tryLock(10, 5, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // if after getting lock, redis cache already updated, then get data directly from cache
+            String skuInfoJsonResult=jedis.get(skuKey);
+            if(skuInfoJsonResult!=null) {
+                if (!"EMPTY".equals(skuInfoJsonResult)) {
+                    System.out.println(Thread.currentThread() + "cache hit!!");
+                    skuInfoResult = JSON.parseObject(skuInfoJson, SkuInfo.class);
+                }
+            }else{
+                // first to get lock & hit db
+                skuInfoResult = getSkuInfoDB(skuId);
+                System.out.println(Thread.currentThread()+"write to redis cache");
+                //  String skuInfoJsonResult=null;
+                if(skuInfoResult!=null){
+                    skuInfoJsonResult = JSON.toJSONString(skuInfoResult);
+                }else{
+                    skuInfoJsonResult ="EMPTY";
+                }
+                jedis.setex(skuKey, SKU_EXPIRE_SEC, skuInfoJsonResult);
+            }
+            // release own lock
+            lock.unlock();
+        }
+        return skuInfoResult;
+    }
+
 
     @Override
     public List<SpuSaleAttr> getSpuSaleAttrBySpuIdCheckSku(String skuId, String spuId) {
