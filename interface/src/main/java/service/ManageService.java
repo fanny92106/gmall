@@ -3,6 +3,7 @@ package service;
 import bean.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ManageService {
 
@@ -40,8 +41,11 @@ public interface ManageService {
     public void saveSkuInfo(SkuInfo skuInfo);
 
     // search sku info
-    public SkuInfo getSkuInfo(String skuId);
+    public SkuInfo getSkuInfo(String skuId) throws InterruptedException;
 
     // search selected sku sale attributes based on spuId
     public List<SpuSaleAttr> getSpuSaleAttrBySpuIdCheckSku(String skuId, String spuId);
+
+    // search sku sale attribute list based on spuId
+    public Map<String, String> getSkuValueIdsMap(String spuId);
 }
