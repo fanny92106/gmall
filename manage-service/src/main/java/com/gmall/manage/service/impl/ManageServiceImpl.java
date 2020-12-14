@@ -242,12 +242,6 @@ public class ManageServiceImpl implements ManageService {
 
 
     public SkuInfo getSkuInfoDB(String skuId) {
-        // add cache test
-        Jedis jedis = redisUtil.getJedis();
-        jedis.set("k1", "v1");
-        jedis.close();
-
-
         // get basic sku info
         SkuInfo skuInfo = skuInfoMapper.selectByPrimaryKey(skuId);
         if(skuInfo==null){
@@ -260,12 +254,19 @@ public class ManageServiceImpl implements ManageService {
         List<SkuImage> skuImageList = skuImageMapper.select(skuImage);
         skuInfo.setSkuImageList(skuImageList);
 
-        // get sku attr value
+        // get sku sale attr value
         SkuSaleAttrValue skuSaleAttrValue = new SkuSaleAttrValue();
         skuSaleAttrValue.setSkuId(skuId);
         List<SkuSaleAttrValue> skuSaleAttrValueList = skuSaleAttrValueMapper.select(skuSaleAttrValue);
         skuInfo.setSkuSaleAttrValueList(skuSaleAttrValueList);
 
+        // get sku attr value
+        SkuAttrValue skuAttrValue = new SkuAttrValue();
+        skuAttrValue.setSkuId(skuId);
+        List<SkuAttrValue> skuAttrValueList = skuAttrValueMapper.select(skuAttrValue);
+        skuInfo.setSkuAttrValueList(skuAttrValueList);
+
+        // return skuInfo
         return skuInfo;
     }
 

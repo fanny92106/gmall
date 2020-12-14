@@ -3,12 +3,12 @@ package com.gmall.manage.controller;
 
 import bean.*;
 import com.alibaba.dubbo.config.annotation.Reference;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.web.bind.annotation.*;
+import service.ListService;
 import service.ManageService;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 @RestController
@@ -16,6 +16,9 @@ public class ManageController {
 
     @Reference
     ManageService manageService;
+
+    @Reference
+    ListService listService;
 
     @GetMapping("getCatalog1")
     public List<BaseCatalog1> getBaseCatalog1(){
@@ -58,7 +61,6 @@ public class ManageController {
         return manageService.getBaseSaleAttrList();
     }
 
-
     @PostMapping("saveSpuInfo")
     public String saveSpuInfo(@RequestBody SpuInfo spuInfo){
         manageService.saveSpuInfo(spuInfo);
@@ -73,5 +75,25 @@ public class ManageController {
     @GetMapping("spuSaleAttrList")
     public List<SpuSaleAttr> getSpuSaleAttrList(String spuId){
         return manageService.getSpuSaleAttrList(spuId);
+    }
+
+    @PostMapping("onSale")
+    public String onSale(@RequestParam("skuId") String skuId){
+        // copy same properties from skuInfo to skuLsInfo
+        SkuLsInfo skuLsInfo = new SkuLsInfo();
+        try {
+            SkuInfo skuInfo = manageService.getSkuInfo(skuId);
+            try {
+                BeanUtils.copyProperties(skuLsInfo, skuInfo);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            listService.saveSkuLsInfo(skuLsInfo);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "success";
     }
 }
