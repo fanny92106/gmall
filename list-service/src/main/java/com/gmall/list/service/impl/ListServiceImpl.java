@@ -47,16 +47,28 @@ public class ListServiceImpl implements ListService {
     @Override
     public SkuLsResult getSkuLsInfoList(SkuLsParams skuLsParams) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        // sku name search
         BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        boolQueryBuilder.must(new MatchQueryBuilder("skuName", skuLsParams.getKeyword()));
-        // category search
-        boolQueryBuilder.filter(new TermQueryBuilder("catalog3Id", skuLsParams.getCatalog3Id()));
-        // sku attr filter
-        String[] valueIds = skuLsParams.getValueId();
-        for (int i = 0; i < valueIds.length; i++) {
-            String valueId = valueIds[i];
-            boolQueryBuilder.filter(new TermQueryBuilder("skuAttrValueList.valueId", valueId));
+
+        // check null to avoid NPE
+        if(skuLsParams.getKeyword()!=null){
+            // sku name search
+            boolQueryBuilder.must(new MatchQueryBuilder("skuName", skuLsParams.getKeyword()));
+            // highlight
+            searchSourceBuilder.highlight(new HighlightBuilder().field("skuName").preTags("<span style='color:red'>").postTags("</span>"));
+        }
+
+        // category search & check null to avoid NPE
+        if(skuLsParams.getCatalog3Id()!=null){
+            boolQueryBuilder.filter(new TermQueryBuilder("catalog3Id", skuLsParams.getCatalog3Id()));
+        }
+
+        // sku attr filter & check null to avoid NPE
+        if(skuLsParams.getValueId()!=null && skuLsParams.getValueId().length>0) {
+            String[] valueIds = skuLsParams.getValueId();
+            for (int i = 0; i < valueIds.length; i++) {
+                String valueId = valueIds[i];
+                boolQueryBuilder.filter(new TermQueryBuilder("skuAttrValueList.valueId", valueId));
+            }
         }
         // price
         boolQueryBuilder.filter(new RangeQueryBuilder("price").gte("3200"));
@@ -65,9 +77,6 @@ public class ListServiceImpl implements ListService {
         // init row
         searchSourceBuilder.from((skuLsParams.getPageNo()-1)*skuLsParams.getPageSize());
         searchSourceBuilder.size(skuLsParams.getPageSize());
-
-        // highlight
-        searchSourceBuilder.highlight(new HighlightBuilder().field("skuName").preTags("<span style='color:red'>").postTags("</span>"));
 
         // aggregation
         TermsBuilder aggsBuilder = AggregationBuilders.terms("groupby_value_id").field("skuAttrValueList.valueId").size(1000);
@@ -84,7 +93,6 @@ public class ListServiceImpl implements ListService {
         SkuLsResult skuLsResult = new SkuLsResult();
         try {
             SearchResult searchResult = jestClient.execute(search);
-
 
             // sku list
             List<SkuLsInfo> skuLsInfoList = new ArrayList<>();
