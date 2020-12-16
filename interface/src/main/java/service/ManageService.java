@@ -48,4 +48,7 @@ public interface ManageService {
 
     // search sku sale attribute list based on spuId
     public Map<String, String> getSkuValueIdsMap(String spuId);
+
+    // search attr based on attr value
+    public List<BaseAttrInfo> getAttrList(List attrValueIdList);
 }

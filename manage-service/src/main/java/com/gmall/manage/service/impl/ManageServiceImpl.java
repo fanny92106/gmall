@@ -1,6 +1,7 @@
 package com.gmall.manage.service.impl;
 
 import bean.*;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.gmall.manage.mapper.*;
@@ -402,5 +403,12 @@ public class ManageServiceImpl implements ManageService {
             skuValueIdsMap.put(valueIds, skuId);
         }
         return skuValueIdsMap;
+    }
+
+    @Override
+    public List<BaseAttrInfo> getAttrList(List attrValueIdList) {
+        // convert input list to val1, val2, val3
+        String valueIds = StringUtils.join((String[]) attrValueIdList.toArray(), ",");
+        return baseAttrInfoMapper.getBaseAttrInfoListByValueIds(valueIds);
     }
 }
